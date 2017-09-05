@@ -51,7 +51,9 @@ gulp.task('clean', () => {
   del(['build/**/*'])
 })
 gulp.task('watch', () => {
-  gulp.watch('app/pug/**/*.pug', ['pug'])
+  gulp.watch(paths.src.pug, ['pug'])
+  gulp.watch(paths.src.less, ['less'])
+  gulp.watch(paths.src.js, ['scripts'])
 })
 // Build Sequence
 // -------------------
