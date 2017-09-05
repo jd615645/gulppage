@@ -1,30 +1,35 @@
 const gulp = require('gulp')
-const deploy = require('gulp-gh-pages')
-
-const paths = {
-  src: {
-    less: './src/style/less/*.less',
-    css: './src/style/css/*.css',
-    js: './src/js/*.js',
-    lib: './src/js/lib/*.js',
-    pug: './src/pug/*.pug',
-    data: './src/data/**',
-    images: './src/img/**'
-  },
-  dist: {
-    html: './dist',
-    css: './dist/style',
-    js: './dist/js',
-    lib: './dist/js/lib/',
-    data: './dist/data',
-    images: './dist/img'
-  }
-}
-
-/**
- * Push build to gh-pages
- */
-gulp.task('deploy', () => {
-  return gulp.src('./dist/**/*')
-    .pipe(deploy())
+const pug = require('gulp-pug')
+const del = require('del')
+const runSequence = require('run-sequence')
+const ghPages = require('gulp-gh-pages')
+// gh-pages
+gulp.task('deploy', function () {
+  return gulp.src('build/**/*')
+    .pipe(ghPages())
+})
+// pug
+gulp.task('pug', function () {
+  return gulp.src(['app/pug/*.pug'])
+    .pipe(pug({
+      pretty: true
+    }))
+    .pipe(gulp.dest('build/'))
+})
+// Cleaning
+gulp.task('clean', function () {
+  return del(['build/**/*'])
+})
+gulp.task('watch', function () {
+  gulp.watch('app/pug/**/*.pug', ['pug'])
+})
+// Build Sequence
+// -------------------
+gulp.task('default', function () {
+  runSequence('watch', ['pug'])
+})
+// 在執行 build 時，也依序執行 deploy
+// 不過 deploy 要放在最後面
+gulp.task('build', function () {
+  runSequence('clean', ['pug'], 'deploy')
 })
