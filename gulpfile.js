@@ -1,35 +1,67 @@
 const gulp = require('gulp')
-const pug = require('gulp-pug')
 const del = require('del')
 const runSequence = require('run-sequence')
 const ghPages = require('gulp-gh-pages')
+const $ = require('gulp-load-plugins')()
+
+const paths = {
+  src: {
+    less: './src/style/less/*.less',
+    css: './src/style/css/*.css',
+    js: './src/js/*.js',
+    lib: './src/js/lib/*.js',
+    pug: './src/pug/*.pug',
+    data: './src/data/**',
+    images: './src/img/**'
+  },
+  dist: {
+    html: './dist',
+    css: './dist/style',
+    js: './dist/js',
+    lib: './dist/js/lib/',
+    data: './dist/data',
+    images: './dist/img'
+  }
+}
+
 // gh-pages
-gulp.task('deploy', function () {
-  return gulp.src('build/**/*')
+gulp.task('deploy', () => {
+  gulp.src('dist/**/*')
     .pipe(ghPages())
 })
 // pug
-gulp.task('pug', function () {
-  return gulp.src(['app/pug/*.pug'])
-    .pipe(pug({
+gulp.task('pug', () => {
+  gulp.src(paths.src.pug)
+    .pipe($.pug({
       pretty: true
     }))
-    .pipe(gulp.dest('build/'))
+    .pipe(gulp.dest('dist/'))
+})
+gulp.task('css', () => {
+  gulp.src(paths.src.css)
+    .pipe(gulp.dest(paths.dist.css))
+})
+gulp.task('less', () => {
+  gulp.src(paths.src.less)
+    .pipe($.less())
+    .pipe(gulp.dest(paths.dist.css))
 })
 // Cleaning
-gulp.task('clean', function () {
-  return del(['build/**/*'])
+gulp.task('clean', () => {
+  del(['build/**/*'])
 })
-gulp.task('watch', function () {
+gulp.task('watch', () => {
   gulp.watch('app/pug/**/*.pug', ['pug'])
 })
 // Build Sequence
 // -------------------
-gulp.task('default', function () {
+gulp.task('default', () => {
   runSequence('watch', ['pug'])
+  runSequence('watch', ['css'])
+  runSequence('watch', ['less'])
 })
 // 在執行 build 時，也依序執行 deploy
 // 不過 deploy 要放在最後面
-gulp.task('build', function () {
-  runSequence('clean', ['pug'], 'deploy')
+gulp.task('build', () => {
+  runSequence('clean', ['pug', 'css', 'less'], 'deploy')
 })
